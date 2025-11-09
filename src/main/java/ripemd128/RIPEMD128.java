@@ -34,5 +34,15 @@ public class RIPEMD128 {
             15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 13, 4,
             8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14
     };
+
+     // Nonlinear functions
+    private int f1(int x, int y, int z) { return x ^ y ^ z; }
+    private int f2(int x, int y, int z) { return (x & y) | (~x & z); }
+    private int f3(int x, int y, int z) { return (x | ~y) ^ z; }
+    private int f4(int x, int y, int z) { return (x & z) | (y & ~z); }
+
+    private static int rotl(int x, int n) {
+        return (x << n) | (x >>> (32 - n));
+    }
 }
 
