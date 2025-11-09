@@ -44,5 +44,17 @@ public class RIPEMD128 {
     private static int rotl(int x, int n) {
         return (x << n) | (x >>> (32 - n));
     }
+
+      // Constructor: initialize hash constants
+    public RIPEMD128() {
+        reset();
+    }
+
+    private void reset() {
+        h0 = 0x67452301;
+        h1 = 0xEFCDAB89;
+        h2 = 0x98BADCFE;
+        h3 = 0x10325476;
+    }
 }
 
