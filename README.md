@@ -107,7 +107,7 @@ String hash2 = ripemd128.hash(message);
 
 ## Autor
 
-Ardi Berdyna
-Dafina Keqmezi
+Ardi Berdyna,
+Dafina Keqmezi,
 Ylljeta Kicaj
 
