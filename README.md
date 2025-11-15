@@ -2,22 +2,38 @@
 
 Ky projekt demonstron përdorimin e algoritmit të hashimit RIPEMD-128 në Java.
 
-## Përshkrim
+# Përshkrim
 
-RIPEMD-128 është një algoritëm hash kriptografik që prodhon një hash 128-bit (16 bytes) që përfaqësohet si një string hexadecimal me 32 karaktere. Ky projekt implementon algoritmin RIPEMD-128 nga e para (scratch) duke përdorur Java.
+**RIPEMD-128** është një funksion hash kriptografik që prodhon një **vlerë hash 128-bit (16 bytes)**. Ai është dizajnuar si pjesë e familjes së funksioneve hash RIPEMD si një alternativë ndaj MD4 dhe MD5. RIPEMD-128 përdoret kryesisht për:
 
-## Kërkesat
+- Verifikimin e integritetit të të dhënave  
+- Nënshkrimet digjitale  
 
-- Java JDK 8 ose më i lartë
-- Java kompajler (javac)
+Duke ofruar një mënyrë të sigurt dhe të shpejtë për të hash-uar mesazhet.
 
-## Si funksionon
+## Karakteristikat kryesore të RIPEMD-128:
 
-- Merr një tekst nga përdoruesi (si string ose si byte array)
-- E pad-at mesazhin sipas specifikacioneve të RIPEMD-128
-- Përpunon mesazhin në blloqe 512-bit
-- Gjeneron hash-in RIPEMD-128 përmes algoritmit dual-pipeline
-- Shfaq rezultatin në format hexadecimal
+- Prodhon një output hash 128-bit.  
+- E projektuar për të rezistuar më mirë ndaj collison attacks krahasuar me MD4/MD5.  
+- Përdoret gjerësisht në aplikime kriptografike ku pranohet një madhësi hash më e vogël.
+
+
+## Versionet
+Ky projekt përfshin **dy implementime të RIPEMD-128** në Java:
+
+### 1. “From Scratch”
+
+- Implementon algoritmin **RIPEMD-128** direkt në Java, pa përdorur librari, tregon logjikën e algoritmit në nivel bazik dhe e gjithë logjika e hash-it është e shkruar manualisht.
+
+```javac src/main/java/ripemd128/RIPEMD128.java```
+```java -cp out ripemd128.RIPEMD128```
+
+### 2. BouncyCastle
+
+- Përdor bibliotekën BouncyCastle, e cila ofron implementime të sigurta dhe të optimizuara për hash funksione, përfshirë RIPEMD-128.
+
+```javac src/main/java/bouncycastle/RIPEMD128Test.java```
+```java -cp out ripemd128Test.RIPEMD128Test```
 
 ## Struktura e Projektit
 
@@ -26,84 +42,13 @@ RIPEMD128-Hashing-Java/
 ├── src/
 │   └── main/
 │       └── java/
-│           └── ripemd128/
-│               └── RIPEMD128.java    # Implementimi i algoritmit
-├── out/                               # Folder për file-et e kompiluara (.class)
-└── README.md                          # Ky dokument
+│           └── ripemd128/        #Versioni 1
+│               └── ripemd128.java
+            └── bouncycastle/     #Versioni 2
+│               └── ripemd128Test.java      
+└── README.md                          
 ```
 
-## Si ta kompilosh dhe ekzekutosh
-
-### Kompilim
-```bash
-javac -d out -sourcepath src/main/java src/main/java/ripemd128/RIPEMD128.java
-```
-
-Kjo krijon folderin `out/` dhe vendos file-et `.class` të kompiluara atje.
-
-### Ekzekutim
-
-**Test default (me mesazhe të paracaktuar):**
-```bash
-java -cp out ripemd128.RIPEMD128
-```
-
-**Me tekst personalizuar:**
-```bash
-java -cp out ripemd128.RIPEMD128 "Teksti juaj këtu"
-```
-
-**Me shumë argumente:**
-```bash
-java -cp out ripemd128.RIPEMD128 "argument1" "argument2"
-```
-
-## Shembuj
-
-### Shembull 1: Mesazh i thjeshtë
-```
-Input:  Siguria e informacionit
-Output: b0213b834c9700d5e0480b171990cb7b
-```
-
-### Shembull 2: String i zbrazët
-```
-Input:  (empty)
-Output: 66467f456d88153c09b776d3865bcc16
-```
-
-### Shembull 3: Karakter i vetëm
-```
-Input:  a
-Output: 96dd8f0c942274a99ccd1360b3770dda
-```
-
-### Shembull 4: Tekst i shkurtër
-```
-Input:  abc
-Output: 211b03dabe5fdcb8a2d50723ffa0a02c
-```
-
-## Karakteristikat
-
-- Implementim i plotë i RIPEMD-128 nga e para
-- Mbështetje për UTF-8 encoding
-- Përpunon mesazhe të gjatësisë arbitrare
-- Output në format hexadecimal
-- Testim dhe demonstrim integruar
-
-## Si të përdoret në kod
-
-```java
-import ripemd128.RIPEMD128;
-
-RIPEMD128 ripemd128 = new RIPEMD128();
-
-String hash1 = ripemd128.hash("Mesazhi juaj");
-
-byte[] message = "Mesazh".getBytes();
-String hash2 = ripemd128.hash(message);
-```
 
 ## Autor
 
