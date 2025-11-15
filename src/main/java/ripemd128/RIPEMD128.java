@@ -169,11 +169,9 @@ public class RIPEMD128 {
     }
 
     public static void main(String[] args) {
-        // Try to set output encoding to UTF-8 for proper Albanian character display
         try {
             System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
-            // Fallback if UTF-8 not supported (should not happen on modern systems)
             System.err.println("Warning: UTF-8 encoding not available");
         }
         
@@ -195,9 +193,7 @@ public class RIPEMD128 {
         System.out.println();
 
         if (args.length > 0) {
-            // Join arguments with space, preserving UTF-8 encoding
             String input = String.join(" ", args);
-            // Ensure proper UTF-8 handling for input
             String result = ripemd128.hash(input);
             System.out.println("Input:  " + input);
             System.out.println("Output: " + result);
