@@ -1,7 +1,10 @@
 package ripemd128;
 
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 public class RIPEMD128 {
 
@@ -35,7 +38,14 @@ public class RIPEMD128 {
             8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14
     };
 
-     // Nonlinear functions
+    private static final int[] KL = {
+            0x00000000, 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC
+    };
+
+    private static final int[] KR = {
+            0x50A28BE6, 0x5C4DD124, 0x6D703EF3, 0x00000000
+    };
+
     private int f1(int x, int y, int z) { return x ^ y ^ z; }
     private int f2(int x, int y, int z) { return (x & y) | (~x & z); }
     private int f3(int x, int y, int z) { return (x | ~y) ^ z; }
@@ -45,7 +55,6 @@ public class RIPEMD128 {
         return (x << n) | (x >>> (32 - n));
     }
 
-      // Constructor: initialize hash constants
     public RIPEMD128() {
         reset();
     }
@@ -55,6 +64,144 @@ public class RIPEMD128 {
         h1 = 0xEFCDAB89;
         h2 = 0x98BADCFE;
         h3 = 0x10325476;
+    }
+
+    private byte[] padMessage(byte[] message) {
+        long messageLength = message.length * 8L;
+        int paddingLength = 64 - ((message.length + 9) % 64);
+        if (paddingLength == 64) paddingLength = 0;
+        
+        int totalLength = message.length + 1 + paddingLength + 8;
+        if (totalLength % 64 != 0) {
+            totalLength = ((totalLength / 64) + 1) * 64;
+            paddingLength = totalLength - message.length - 1 - 8;
+        }
+        
+        byte[] padded = new byte[totalLength];
+        System.arraycopy(message, 0, padded, 0, message.length);
+        padded[message.length] = (byte) 0x80;
+        
+        for (int i = 0; i < 8; i++) {
+            padded[padded.length - 8 + i] = (byte) (messageLength >>> (i * 8));
+        }
+        
+        return padded;
+    }
+
+
+    private void processBlock(byte[] block) {
+        int[] X = new int[16];
+        ByteBuffer buffer = ByteBuffer.wrap(block).order(ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < 16; i++) {
+            X[i] = buffer.getInt(i * 4);
+        }
+
+        int al = h0, bl = h1, cl = h2, dl = h3;
+        int ar = h0, br = h1, cr = h2, dr = h3;
+
+        for (int i = 0; i < 64; i++) {
+            int round = i / 16;
+            int func = 0;
+            int t = 0;
+            
+            switch (round) {
+                case 0: func = f1(bl, cl, dl); break;
+                case 1: func = f2(bl, cl, dl); break;
+                case 2: func = f3(bl, cl, dl); break;
+                case 3: func = f4(bl, cl, dl); break;
+            }
+            
+            t = (al + func + X[ML[i]] + KL[round]) & 0xFFFFFFFF;
+            t = rotl(t, RL[i]);
+            al = dl;
+            dl = cl;
+            cl = bl;
+            bl = (bl + t) & 0xFFFFFFFF;
+        }
+
+        for (int i = 0; i < 64; i++) {
+            int round = i / 16;
+            int func = 0;
+            int t = 0;
+            
+            switch (round) {
+                case 0: func = f4(br, cr, dr); break;
+                case 1: func = f3(br, cr, dr); break;
+                case 2: func = f2(br, cr, dr); break;
+                case 3: func = f1(br, cr, dr); break;
+            }
+            
+            t = (ar + func + X[MR[i]] + KR[round]) & 0xFFFFFFFF;
+            t = rotl(t, RR[i]);
+            ar = dr;
+            dr = cr;
+            cr = br;
+            br = (br + t) & 0xFFFFFFFF;
+        }
+
+        int t = (h1 + cl + dr) & 0xFFFFFFFF;
+        h1 = (h2 + dl + ar) & 0xFFFFFFFF;
+        h2 = (h3 + al + br) & 0xFFFFFFFF;
+        h3 = (h0 + bl + cr) & 0xFFFFFFFF;
+        h0 = t;
+    }
+
+    public String hash(byte[] message) {
+        reset();
+        byte[] padded = padMessage(message);
+        
+        for (int i = 0; i < padded.length; i += 64) {
+            byte[] block = new byte[64];
+            int copyLength = Math.min(64, padded.length - i);
+            System.arraycopy(padded, i, block, 0, copyLength);
+            processBlock(block);
+        }
+        
+        return String.format("%08x%08x%08x%08x", 
+            Integer.reverseBytes(h0), 
+            Integer.reverseBytes(h1),
+            Integer.reverseBytes(h2), 
+            Integer.reverseBytes(h3));
+    }
+
+    public String hash(String message) {
+        return hash(message.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static void main(String[] args) {
+        // Try to set output encoding to UTF-8 for proper Albanian character display
+        try {
+            System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException e) {
+            // Fallback if UTF-8 not supported (should not happen on modern systems)
+            System.err.println("Warning: UTF-8 encoding not available");
+        }
+        
+        RIPEMD128 ripemd128 = new RIPEMD128();
+        
+        String testMessage = "Siguria e informacionit";
+        String hash = ripemd128.hash(testMessage);
+        
+        System.out.println("Testimi i algoritmit per HASH-ing RIPEMD-128 ne Java");
+        System.out.println("====================================================");
+        System.out.println("Input:  " + testMessage);
+        System.out.println("Output: " + hash);
+        System.out.println();
+        
+        String emptyHash = ripemd128.hash("");
+        System.out.println("Test me string te zbrazet:");
+        System.out.println("Input:  (empty)");
+        System.out.println("Output: " + emptyHash);
+        System.out.println();
+
+        if (args.length > 0) {
+            // Join arguments with space, preserving UTF-8 encoding
+            String input = String.join(" ", args);
+            // Ensure proper UTF-8 handling for input
+            String result = ripemd128.hash(input);
+            System.out.println("Input:  " + input);
+            System.out.println("Output: " + result);
+        }
     }
 }
 
